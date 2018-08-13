@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+        <title>Traffic</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+        <style>
+          .both-charts {
+
+          }
+          .traffic-source {
+            display: flex;
+            align: center;
+          }
+        .color-legend {
+          display: inline-block;
+          height: 24px;
+          width: 24px;
+          background-color: #777;
+          margin-right: 0.5rem;
+          border-radius: 4px;
+        }
+        .color-legend.Dire {
+          background-color: navy;
+        }
+        .color-legend.Orga {
+          background-color: red;
+        }
+        .color-legend.Refe {
+          background-color: yellow;
+        }
+        .color-legend.Soci {
+          background-color: blue ;
+        }
+        .color-legend.Paid {
+          background-color: darkgray
+        }
+      </style>
+</head>
+
+
+<body>
+<h1>New Users Report</h1>
+<div class="container-fluid">
+<div class="row both-charts">
+<div class="table-area col-md-6">
+<table class="table table-sm table-striped">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Traffic Source</th>
+            {% for key, months in data.items %}
+            {% if key == 'months' %}
+            {% for month in months %}
+            <th scope="col">{{ month }}</th>
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for key, values in data.items %}
+          {% if key != 'months' %}
+          <tr>
+            <th scope="row"><span class="traffic-source"><span class="color-legend {{ key|slice:":4" }}"></span> {{key}}</span></th>
+            {% for value in values %}
+            <td>{{ value }}</td>
+            {% endfor %}
+          {% endif %} 
+          {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  <div class="chart-area col-md-6">
+      <canvas id="chart"></canvas>
+  </div>
+</div>
+</div>
+<script>
+var ctx = document.getElementById('chart');
+var myChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels:{{ data.months|safe }},
+    datasets: [{% for key, values in data.items %}{% if 'month' not in key %}
+      {
+        label: '{{ key }}',
+        data: {{ values|safe }},
+        {% if 'Direct' in key %}
+        backgroundColor: '#000080'
+        {% elif 'Organic' in key %}
+        backgroundColor: '#ff0000'
+        {% elif 'Referral' in key %}
+        backgroundColor: '#ffff00'
+        {% elif 'Social' in key %}
+        backgroundColor: '#0000FF'
+        {% elif 'Paid' in key %}
+        backgroundColor: '#A9A9A9'
+        {% else %}     
+        backgroundColor: '#777'
+        {% endif %}
+      }{% if not loop.last %},{% endif %}{% endif %}{% endfor %}
+    ]
+  },
+  options: {
+    animation: {
+      duration: 0
+    },
+    legend: {
+      display: false
+    },
+    scales: {
+      xAxes: [{ stacked: true }],
+      yAxes: [{ stacked: true }]
+    }
+  }
+});
+
+</script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/"></script>
+</body>
+</html>
