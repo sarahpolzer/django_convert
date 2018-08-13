@@ -506,7 +506,7 @@ def screenshots_master(clients, client, url_list, port, folder_id, drive_service
     def master(url_list):
         pres_id = clients[client]['presentation_id']
         for url in url_list:
-            url = 'http://0.0.0.0:8000' + url
+            url = 'http://0.0.0.0:8000' + "/"
             image_url = take_ss(url)
             file_id = get_file_id(image_url)
             new_image_url = get_new_image_url(file_id)
