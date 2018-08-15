@@ -16,20 +16,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from . import views
-from .views import find_client_id
 import json
 
 with open( 'report_generator/data/client_information.json', 'r') as f:
-        clients = json.load(f)
-client = "321 Web Marketing"
-
-client_id = find_client_id(client)
-request = "GET"
+    clients = json.load(f)
 
 app_name="report_generator"
 urlpatterns = [
-    #path('traffic/', views.display_traffic_chart(request,client_id), name='Traffic'),
-    # ex: /polls/5/results/
-    #path('leads/', views.display_leads_chart(request,client_id), name='Leads'),
-    path('make-report/<int:org_id>', views.master(clients, client), name="generate-report")
+    path('traffic/<int:client_id>', views.display_traffic_chart, name='Traffic'),
+    path('leads/<int:client_id>', views.display_leads_chart, name='Leads'),
+    path('make-report/<int:client_id>', views.master, name = 'generate-report')
+
 ]
+
+

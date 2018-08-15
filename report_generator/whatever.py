@@ -295,3 +295,4 @@ def charts_master(clients, client):
     data_sets = [traffic_data, leads_data]
     return data_sets
     
+

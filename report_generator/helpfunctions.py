@@ -64,7 +64,7 @@ def initialize_analyticsreporting():
 #Service for google slides API
 slides_service = setup_googleslides_api()
 #Service for google drive API
-drive_service =  initialize_drive()
+drive_service =  setup_googledrive_api()
 
 
 def create_presentation(title):
@@ -145,7 +145,7 @@ def find_replace_img(slides_id, shape_text, new_img_url):
 #The port which screenshots will be taken from 
 port = '8000'
 #The list of urls that will be screenshotted
-url_list = ['/reports/traffic', '/reports/leads']
+url_list = ['/traffic', '/leads']
 
 """Variables for uploading flask and ahrefs screenshots into Google Drive API"""
 #Folder in which I have permissions to put files into my drive and remove them
@@ -449,7 +449,7 @@ def charts_master(clients, client):
     return traffic_data, leads_data
 
 #This function takes screenshots of flask charts and tables and places them into the reports
-def screenshots_master(clients, client, url_list, port, folder_id, drive_service):
+def screenshots_master(clients, client, url_list, folder_id, drive_service):
     #This function takes screenshots cropped images and returns an image url
     def take_ss(url):
         chromedriver = "/usr/local/bin/chromedriver"
@@ -503,10 +503,10 @@ def screenshots_master(clients, client, url_list, port, folder_id, drive_service
 
     #This function uses all of the functions above to effectively screenshot all of the urls in the
     #url list and place the resulting images into specific shape/texts in the reports
-    def master(url_list):
+    def master(url_list, port):
         pres_id = clients[client]['presentation_id']
         for url in url_list:
-            url = 'http://0.0.0.0:8000' + "/"
+            url = 'http://127.0.0.1:8000/' + url
             image_url = take_ss(url)
             file_id = get_file_id(image_url)
             new_image_url = get_new_image_url(file_id)
@@ -519,7 +519,7 @@ def screenshots_master(clients, client, url_list, port, folder_id, drive_service
             delete_png_file(image_url)
             delete_google_drive_file(file_id)
 
-    master(url_list)
+    master(url_list, port)
 
 
 
@@ -703,17 +703,19 @@ def extraneous_find_and_replace_master(clients, client):
     find_replace_str(pres_id, '{{mo_before_last}}', mo_before_last) 
 
 
-with open( 'report_generator/data/client_information.json', 'r') as f:
-    clients = json.load(f)
-client = "321 Web Marketing"
+   
 
-def main(clients, client):
+def main(client_id):
+    client_id = str(client_id)
+    with open( 'report_generator/data/client_information.json', 'r') as f:
+        clients = json.load(f)
     drive_service = setup_googledrive_api()
     folder_id = '1hScQyb1uMLQaBmNgyHa1dlFZAO2mKzxC'
-    url_list = ['/reports/traffic', '/reports/leads']
-    port = "8000"
+    url_list = ['traffic/' + str(client_id), 'leads/' + str(client_id)]
     drive_service = setup_googledrive_api()
-    ahrefs_scrape_master(clients, client, folder_id)
-    extraneous_find_and_replace_master(clients, client)
-    screenshots_master(clients, client, url_list, port, folder_id, drive_service)
+    for client in clients:
+        if clients[client]["client_id"] == client_id:
+            ahrefs_scrape_master(clients, client, folder_id)
+            extraneous_find_and_replace_master(clients, client)
+            screenshots_master(clients, client, url_list, folder_id, drive_service)
 

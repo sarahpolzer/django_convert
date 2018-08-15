@@ -21,6 +21,6 @@ import report_generator.urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(report_generator.urls)),
+    path('', include(report_generator.urls))
     # path('make-report/<int:org_id>', views.do_whole_function, name="generate-report")
 ]
