@@ -20,6 +20,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import selenium
 from selenium import webdriver
 from django.template import loader
+import requests
 
 def setup_googleslides_api():
     SCOPES = ['https://www.googleapis.com/auth/presentations',  'https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/analytics']
@@ -170,6 +171,7 @@ ahrefs_un = os.environ['AHREFS_UN'] #ahrefs username
 domain_name = clients[client]['domain_name'].replace("https://", "").replace("http://", "").replace('www/', 'www.')
 #client domain name that will be used to scrape the correct ahrefs page
 
+
 def charts_master(clients, client):
     now = datetime.datetime.now()
     reporting_month = now - relativedelta(months=1)
@@ -216,10 +218,11 @@ def charts_master(clients, client):
     Google
     Analytics"""
 
+    analytics = initialize_analyticsreporting()
 
     #A function to return a dictionary of new users, per month, by channel grouping
-    def get_new_users(month, view_id):
-        analytics = get_google_analytics_api.initialize_analyticsreporting()
+
+    def get_new_users(month, view_id, analytics):
         analytics = analytics
         dict = {}
         startdate = datetime.datetime.strptime(month, '%Y/%m')
@@ -256,7 +259,7 @@ def charts_master(clients, client):
     def get_table(list_of_months,view_id):
         data = {}
         for month in list_of_months:
-            data[month] = get_new_users(month, view_id)
+            data[month] = get_new_users(month, view_id, analytics)
         return data
 
         
@@ -413,10 +416,7 @@ def charts_master(clients, client):
         lead_data['Phone Call'] = phone_call
         lead_data['Web Form'] = web_form
         return lead_data           
-                
-        
-            
-    #This is kindof like the master function, it returns the dictionary of leads data that will
+       #This is kindof like the master function, it returns the dictionary of leads data that will
     #later be used in the Flask template.
     def leads_data(reporting_month, months_back, account_id):
         mo_list = get_months(reporting_month, months_back)
@@ -444,9 +444,13 @@ def charts_master(clients, client):
     consolidating data so that the Analytics data, WhatConverts data, and Content charts are all in 
     proper html templates with specific urls
     """
-    traffic_data = traffic_data_for_flask(reporting_month, months_back, view_id)
-    leads_data = leads_data_for_flask(reporting_month, months_back, account_id)
-    return traffic_data, leads_data
+    traffic_data = traffic_data(reporting_month, months_back, view_id)
+    leads_data = leads_data(reporting_month, months_back, account_id)
+    data_sets = [traffic_data, leads_data]
+    return data_sets
+    
+
+
 
 #This function takes screenshots of flask charts and tables and places them into the reports
 def screenshots_master(clients, client, url_list, folder_id, drive_service):

@@ -4,7 +4,6 @@ import json
 from oauth2client import file, client, tools
 from apiclient.discovery import build
 from httplib2 import Http
-
 def setup_googledrive_api():
     SCOPES = 'https://www.googleapis.com/auth/drive'
     store = file.Storage('credentials/credentials.json')
@@ -26,6 +25,24 @@ def duplicate_presentation(name, presentation_id):
     
 
 def make_client_dictionary():
+    def setup_googledrive_api():
+        SCOPES = 'https://www.googleapis.com/auth/drive'
+        store = file.Storage('credentials/credentials.json')
+        creds = store.get()
+        if not creds or creds.invalid:
+            flow = client.flow_from_clientsecrets('credentials/client_secret.json', SCOPES)
+            creds = tools.run_flow(flow, store)
+        drive_service = build('drive', 'v3', http=creds.authorize(Http()))
+        return drive_service
+    def duplicate_presentation(name, presentation_id):
+        service = setup_googledrive_api()
+        body = {
+            'name': name
+        }
+        drive_response = service.files().copy(
+        fileId = presentation_id, body=body).execute()
+        presentation_copy_id = drive_response.get('id')
+        return presentation_copy_id
     #This is the ID of the template presentation on Google Slides
     template_id = "18y4Wz5NX5A-dCWxgbFka45akCoozSeojn0J7DUfLD00"
     #I am requesting the 321 organizations API
@@ -69,7 +86,7 @@ def make_client_dictionary():
 
     clients = {}
     clients_new = {}
-
+    client_urls = {}
     client_id = 0
     for item in organization_data:
         client_information = {}
@@ -95,7 +112,14 @@ def make_client_dictionary():
     for client in clients_new:
         client_id = client_id + 1
         clients_new[client]['client_id']=str(client_id)
+        #client_id = clients_new[client]['client_id']
+        #domain_name = clients_new[client]['domain_name']
+        #org_logo = clients_new[client]['org_logo']
+        #what_converts = clients_new[client]['what_converts']
+        #presentation_id = clients_new[client]['google_analytics']
+        #google_analytics = clients_new[client]['google_analytics']
     with open('client_information.json', 'w') as outfile:
-        return json.dump(clients_new, outfile)
+         json.dump(clients_new, outfile)
 
 make_client_dictionary()
+

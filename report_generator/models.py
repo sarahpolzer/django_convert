@@ -7,3 +7,7 @@ class Organization(models.Model):
     what_converts = models.CharField(max_length=250)
     presentation_id = models.CharField(max_length=250)
     google_analytics = models.CharField(max_length=250)
+
+class OrganizationUrls(models.Model):
+    client = models.CharField(max_length=250)
+    url = models.CharField(max_length=250)
